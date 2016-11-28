@@ -1,4 +1,3 @@
-
 /******************************************************************************
 ** This file is part of profile-qt
 **
@@ -18,7 +17,7 @@
 ** and/or other materials provided with the distribution.
 **
 ** Neither the name of Nokia Corporation nor the names of its contributors
-** may be used to endorse or promote products derived from this software 
+** may be used to endorse or promote products derived from this software
 ** without specific prior written permission.
 **
 ** THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -26,7 +25,7 @@
 ** THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
 ** PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
 ** CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-** EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+** EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 ** PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 ** OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
 ** WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
@@ -823,7 +822,7 @@ inifile_to_csv(const inifile_t *self)
 
 char **
 inifile_get_section_keys(const inifile_t *self, const char *sec_name,
-			 int *pcount)
+                         int *pcount)
 {
   char **res = 0;
   int    cnt = 0;
