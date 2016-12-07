@@ -1,0 +1,80 @@
+bin/ssu-sysinfo.o:\
+	bin/ssu-sysinfo.c\
+	lib/ssusysinfo.h\
+
+bin/ssu-sysinfo.pic.o:\
+	bin/ssu-sysinfo.c\
+	lib/ssusysinfo.h\
+
+lib/inifile.o:\
+	lib/inifile.c\
+	lib/inifile.h\
+	lib/logging.h\
+	lib/symtab.h\
+	lib/util.h\
+	lib/xmalloc.h\
+
+lib/inifile.pic.o:\
+	lib/inifile.c\
+	lib/inifile.h\
+	lib/logging.h\
+	lib/symtab.h\
+	lib/util.h\
+	lib/xmalloc.h\
+
+lib/logging.o:\
+	lib/logging.c\
+	lib/logging.h\
+	lib/util.h\
+	lib/xmalloc.h\
+
+lib/logging.pic.o:\
+	lib/logging.c\
+	lib/logging.h\
+	lib/util.h\
+	lib/xmalloc.h\
+
+lib/ssusysinfo.o:\
+	lib/ssusysinfo.c\
+	lib/inifile.h\
+	lib/ssusysinfo.h\
+	lib/util.h\
+	lib/xmalloc.h\
+
+lib/ssusysinfo.pic.o:\
+	lib/ssusysinfo.c\
+	lib/inifile.h\
+	lib/ssusysinfo.h\
+	lib/util.h\
+	lib/xmalloc.h\
+
+lib/symtab.o:\
+	lib/symtab.c\
+	lib/symtab.h\
+	lib/xmalloc.h\
+
+lib/symtab.pic.o:\
+	lib/symtab.c\
+	lib/symtab.h\
+	lib/xmalloc.h\
+
+lib/util.o:\
+	lib/util.c\
+	lib/logging.h\
+	lib/util.h\
+	lib/xmalloc.h\
+
+lib/util.pic.o:\
+	lib/util.c\
+	lib/logging.h\
+	lib/util.h\
+	lib/xmalloc.h\
+
+lib/xmalloc.o:\
+	lib/xmalloc.c\
+	lib/xmalloc.h\
+
+lib/xmalloc.pic.o:\
+	lib/xmalloc.c\
+	lib/xmalloc.h\
+

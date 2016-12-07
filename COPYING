@@ -1,0 +1,10 @@
+The ini-file parsing logic is derived from profiled sources and
+uses slightly modified BSD 3 clause -license. See
+ - LICENSE.BSD-3CLAUSE
+ - lib/inifile.c
+ - lib/inifile.h
+ - lib/symtab.c
+ - lib/symtab.h
+
+The rest of the code uses standard LGPL v2.1 -license. See
+ - LICENSE.LGPL-v2.1

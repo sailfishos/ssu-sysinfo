@@ -33,19 +33,26 @@
 ** ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ******************************************************************************/
 
-#include "profiled_config.h"
+#include "symtab.h"
 
-#include <stdio.h>
+#include "xmalloc.h"
+
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <time.h>
-
-#include "symtab.h"
 
 /* ========================================================================= *
  * symtab_t  --  methods
  * ========================================================================= */
+
+/* ------------------------------------------------------------------------- *
+ * symtab_elem
+ * ------------------------------------------------------------------------- */
+
+void *
+symtab_elem(const symtab_t *self, size_t ind)
+{
+    return (ind < self->st_count_pvt) ? self->st_elem_pvt[ind] : 0;
+}
 
 /* ------------------------------------------------------------------------- *
  * symtab_insert
@@ -55,39 +62,39 @@ void *
 symtab_insert(symtab_t *self, const void *key)
 {
   size_t l = 0;
-  size_t h = self->st_count;
+  size_t h = self->st_count_pvt;
 
   while( l < h )
   {
     size_t i = (l + h) / 2;
-    void  *p = self->st_elem[i];
-    int    r = strcmp(self->st_key(p), key);
+    void  *p = self->st_elem_pvt[i];
+    int    r = strcmp(self->st_key_pvt(p), key);
 
     if( r < 0 ) { l = i + 1; continue; }
     if( r > 0 ) { h = i + 0; continue; }
     return p;
   }
 
-  if( self->st_count == self->st_alloc )
+  if( self->st_count_pvt == self->st_alloc_pvt )
   {
-    if( self->st_alloc < 16 )
+    if( self->st_alloc_pvt < 16 )
     {
-      self->st_alloc = 16;
+      self->st_alloc_pvt = 16;
     }
     else
     {
-      self->st_alloc = self->st_alloc * 3 / 2;
+      self->st_alloc_pvt = self->st_alloc_pvt * 3 / 2;
     }
-    self->st_elem = realloc(self->st_elem,
-                            self->st_alloc * sizeof *self->st_elem);
+    self->st_elem_pvt = xrealloc(self->st_elem_pvt,
+                                 self->st_alloc_pvt * sizeof *self->st_elem_pvt);
   }
 
-  for( h = self->st_count++; h > l; --h )
+  for( h = self->st_count_pvt++; h > l; --h )
   {
-    self->st_elem[h] = self->st_elem[h-1];
+    self->st_elem_pvt[h] = self->st_elem_pvt[h-1];
   }
 
-  return self->st_elem[l] = self->st_new(key);
+  return self->st_elem_pvt[l] = self->st_new_pvt(key);
 }
 
 /* ------------------------------------------------------------------------- *
@@ -98,13 +105,13 @@ void *
 symtab_lookup(const symtab_t *self, const void *key)
 {
   size_t l = 0;
-  size_t h = self->st_count;
+  size_t h = self->st_count_pvt;
 
   while( l < h )
   {
     size_t i = (l + h) / 2;
-    void  *p = self->st_elem[i];
-    int    r = strcmp(self->st_key(p), key);
+    void  *p = self->st_elem_pvt[i];
+    int    r = strcmp(self->st_key_pvt(p), key);
 
     if( r < 0 ) { l = i + 1; continue; }
     if( r > 0 ) { h = i + 0; continue; }
@@ -115,49 +122,20 @@ symtab_lookup(const symtab_t *self, const void *key)
 }
 
 /* ------------------------------------------------------------------------- *
- * symtab_remove
- * ------------------------------------------------------------------------- */
-
-void
-symtab_remove(symtab_t *self, const void *key)
-{
-  size_t l = 0;
-  size_t h = self->st_count;
-
-  while( l < h )
-  {
-    size_t i = (l + h) / 2;
-    void  *p = self->st_elem[i];
-    int    r = strcmp(self->st_key(p), key);
-
-    if( r < 0 ) { l = i + 1; continue; }
-    if( r > 0 ) { h = i + 0; continue; }
-
-    self->st_del(p);
-
-    for( h = --self->st_count; i < h; ++i )
-    {
-      self->st_elem[i] = self->st_elem[i+1];
-    }
-    break;
-  }
-}
-
-/* ------------------------------------------------------------------------- *
  * symtab_clear
  * ------------------------------------------------------------------------- */
 
 void
 symtab_clear(symtab_t *self)
 {
-  if( self->st_del != 0 )
+  if( self->st_del_pvt != 0 )
   {
-    for( size_t i = 0; i < self->st_count; ++i )
+    for( size_t i = 0; i < self->st_count_pvt; ++i )
     {
-      self->st_del(self->st_elem[i]);
+      self->st_del_pvt(self->st_elem_pvt[i]);
     }
   }
-  self->st_count = 0;
+  self->st_count_pvt = 0;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -170,12 +148,12 @@ symtab_ctor(symtab_t *self,
             symtab_del_fn del,
             symtab_key_fn key)
 {
-  self->st_count = 0;
-  self->st_alloc = 0;
-  self->st_elem  = 0;
-  self->st_new   = new;
-  self->st_key   = key;
-  self->st_del   = del;
+  self->st_count_pvt = 0;
+  self->st_alloc_pvt = 0;
+  self->st_elem_pvt  = 0;
+  self->st_new_pvt   = new;
+  self->st_key_pvt   = key;
+  self->st_del_pvt   = del;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -186,43 +164,5 @@ void
 symtab_dtor(symtab_t *self)
 {
   symtab_clear(self);
-  free(self->st_elem);
-}
-
-/* ------------------------------------------------------------------------- *
- * symtab_create
- * ------------------------------------------------------------------------- */
-
-symtab_t *
-symtab_create(symtab_new_fn new,
-              symtab_del_fn del,
-              symtab_key_fn key)
-{
-  symtab_t *self = calloc(1, sizeof *self);
-  symtab_ctor(self, new, del, key);
-  return self;
-}
-
-/* ------------------------------------------------------------------------- *
- * symtab_delete
- * ------------------------------------------------------------------------- */
-
-void
-symtab_delete(symtab_t *self)
-{
-  if( self != 0 )
-  {
-    symtab_dtor(self);
-    free(self);
-  }
-}
-
-/* ------------------------------------------------------------------------- *
- * symtab_delete_cb
- * ------------------------------------------------------------------------- */
-
-void
-symtab_delete_cb(void *self)
-{
-  symtab_delete(self);
+  free(self->st_elem_pvt);
 }
