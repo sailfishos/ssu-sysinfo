@@ -1,0 +1,10 @@
+prefix=/usr
+includedir=${prefix}/include/ssusysinfo
+libdir=${prefix}/lib
+
+Name: ssu-sysinfo
+Description: Library for obtaining ssu information without IPC
+Version: 0.0.0
+Requires:
+Libs: -L${libdir} -lssusysinfo
+Cflags: -I${includedir}
