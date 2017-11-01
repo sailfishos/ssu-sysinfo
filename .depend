@@ -6,6 +6,30 @@ bin/ssu-sysinfo.pic.o:\
 	bin/ssu-sysinfo.c\
 	lib/ssusysinfo.h\
 
+lib/hw_feature.o:\
+	lib/hw_feature.c\
+	lib/hw_feature.h\
+	lib/ssusysinfo.h\
+	lib/xmalloc.h\
+
+lib/hw_feature.pic.o:\
+	lib/hw_feature.c\
+	lib/hw_feature.h\
+	lib/ssusysinfo.h\
+	lib/xmalloc.h\
+
+lib/hw_key.o:\
+	lib/hw_key.c\
+	lib/hw_key.h\
+	lib/ssusysinfo.h\
+	lib/xmalloc.h\
+
+lib/hw_key.pic.o:\
+	lib/hw_key.c\
+	lib/hw_key.h\
+	lib/ssusysinfo.h\
+	lib/xmalloc.h\
+
 lib/inifile.o:\
 	lib/inifile.c\
 	lib/inifile.h\
@@ -36,6 +60,8 @@ lib/logging.pic.o:\
 
 lib/ssusysinfo.o:\
 	lib/ssusysinfo.c\
+	lib/hw_feature.h\
+	lib/hw_key.h\
 	lib/inifile.h\
 	lib/ssusysinfo.h\
 	lib/util.h\
@@ -43,6 +69,8 @@ lib/ssusysinfo.o:\
 
 lib/ssusysinfo.pic.o:\
 	lib/ssusysinfo.c\
+	lib/hw_feature.h\
+	lib/hw_key.h\
 	lib/inifile.h\
 	lib/ssusysinfo.h\
 	lib/util.h\

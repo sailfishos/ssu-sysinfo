@@ -151,6 +151,9 @@ install ::
 # ----------------------------------------------------------------------------
 
 libssusysinfo_SRC += lib/ssusysinfo.c
+
+libssusysinfo_SRC += lib/hw_feature.c
+libssusysinfo_SRC += lib/hw_key.c
 libssusysinfo_SRC += lib/inifile.c
 libssusysinfo_SRC += lib/logging.c
 libssusysinfo_SRC += lib/symtab.c

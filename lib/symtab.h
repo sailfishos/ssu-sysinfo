@@ -65,6 +65,7 @@ struct symtab_t
   symtab_key_fn  st_key_pvt;
 };
 
+size_t    symtab_size     (const symtab_t *self);
 void     *symtab_elem     (const symtab_t *self, size_t ind);
 void     *symtab_insert   (symtab_t *self, const void *key);
 void     *symtab_lookup   (const symtab_t *self, const void *key);
