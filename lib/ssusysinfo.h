@@ -101,6 +101,28 @@ void          ssusysinfo_reload             (ssusysinfo_t *self);
  */
 const char   *ssusysinfo_device_model       (ssusysinfo_t *self);
 
+/** Query device base model
+ *
+ * For variant devices #ssusysinfo_device_model() returns the
+ * variant name. The name of the base model can be queried
+ * with this function.
+ *
+ * Lookup is done from [variants] section defined in board mappings
+ *
+ * Should be functionally equivalent with:
+ *   SsuDeviceInfo::deviceVariant(false)
+ *
+ * If the device is not an variant and there is no base model,
+ * returns "UNKNOWN" - otherwise return values are similar as
+ * what can be expected from #ssusysinfo_device_model().
+ *
+ * @param self ssusysinfo object pointer
+ *
+ * @return always returns non-null c-string
+ */
+
+const char   *ssusysinfo_device_base_model     (ssusysinfo_t *self);
+
 /** Query device designation
  *
  * Type designation, like NCC-1701.
