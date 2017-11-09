@@ -267,25 +267,52 @@ EXIT:
  * @param self ssusysinfo object pointer
  * @param key  key name used in board config ini files
  *
- * @return c-string, or NULL in case value is not specified
+ * @return c-string
  */
 static const char *
 ssusysinfo_device_attr(ssusysinfo_t *self, const char *key)
 {
-    const char *res   = 0;
-    const char *model = 0;
+    const char *cached = 0;
+    const char *probed = 0;
+    const char *model  = 0;
+    const char *base   = 0;
 
     if( !self || !self->cfg_ini )
         goto EXIT;
 
-    if( !(model = ssusysinfo_device_model(self)) )
+    /* Check if this attr has already been resolved */
+    if( (cached = inifile_get(self->cfg_ini, "cached-attrs", key, 0)) )
         goto EXIT;
 
-    res = inifile_get(self->cfg_ini, model, key, 0);
+    /* Attempt to resolve based on model name */
+    if( (model = ssusysinfo_device_model(self)) ) {
+        if( (probed = inifile_get(self->cfg_ini, model, key, 0)) )
+            goto CACHE;
+    }
+
+    /* In case of variant, attempt to resolve based on base model name */
+    if( (base = ssusysinfo_device_base_model(self)) ) {
+        if( (probed = inifile_get(self->cfg_ini, base, key, 0)) )
+            goto CACHE;
+    }
+
+    /* Use model name as fallback for some attrs */
+    if( !strcmp(key, "deviceDesignation") || !strcmp(key, "prettyModel") )
+        probed = model;
+
+    /* And as an ultimate fallback select unknown */
+    if( !probed )
+        probed = ssusysinfo_unknown;
+
+CACHE:
+    /* Update the cache so that we do not need to repeat the above
+     * heuristics the next time */
+    inifile_set(self->cfg_ini, "cached-attrs", key, (cached = probed));
 
 EXIT:
-    /* Return valid c-string or NULL on failure */
-    return res;
+
+    /* Always return valid c-string */
+    return cached ?: ssusysinfo_unknown;
 }
 
 /* ------------------------------------------------------------------------- *
@@ -331,6 +358,38 @@ ssusysinfo_reload(ssusysinfo_t *self)
 }
 
 const char *
+ssusysinfo_device_base_model(ssusysinfo_t *self)
+{
+    const char *cached = 0;
+    const char *probed = 0;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    if( (cached = inifile_get(self->cfg_ini, "cached-values", "base_model", 0)) )
+        goto EXIT;
+
+    /* Get model name, which is potentially a variant */
+    const char *model = ssusysinfo_device_model(self);
+
+    /* Lookup base model from [variants] */
+    if( (probed = inifile_get(self->cfg_ini, "variants", model, 0)) )
+        goto CACHE;
+
+    /* We have data, but were unable to determine base model */
+    probed = ssusysinfo_unknown;
+
+CACHE:
+    /* Update the cache so that we do not need to repeat the above
+     * heuristics the next time */
+    inifile_set(self->cfg_ini, "cached-values", "base_model", (cached = probed));
+
+EXIT:
+    /* Always return valid c-string */
+    return cached ?: ssusysinfo_unknown;
+}
+
+const char *
 ssusysinfo_device_model(ssusysinfo_t *self)
 {
     const char *cached = 0;
@@ -372,22 +431,20 @@ EXIT:
 const char *
 ssusysinfo_device_designation(ssusysinfo_t *self)
 {
-    /* Always return valid c-string */
-    return ssusysinfo_device_attr(self,
-                                  "deviceDesignation") ?: ssusysinfo_unknown;
+    /* Always returns valid c-string */
+    return ssusysinfo_device_attr(self, "deviceDesignation");
 }
 
 const char *
 ssusysinfo_device_manufacturer(ssusysinfo_t *self)
 {
-    /* Always return valid c-string */
-    return ssusysinfo_device_attr(self,
-                                  "deviceManufacturer") ?: ssusysinfo_unknown;
+    /* Always returns valid c-string */
+    return ssusysinfo_device_attr(self, "deviceManufacturer");
 }
 
 const char *
 ssusysinfo_device_pretty_name(ssusysinfo_t *self)
 {
-    /* Always return valid c-string */
-    return ssusysinfo_device_attr(self, "prettyModel") ?: ssusysinfo_unknown;
+    /* Always returns valid c-string */
+    return ssusysinfo_device_attr(self, "prettyModel");
 }
