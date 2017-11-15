@@ -1,4 +1,3 @@
-# ----------------------------------------------------------- -*- mode: sh -*-
 Name:       ssu-sysinfo
 
 Summary:    Tools and libraries for getting ssu information without D-Bus IPC
@@ -16,8 +15,6 @@ This package contains command line tools and libraries for
 obtaining static ssu information without requiring D-Bus IPC /
 SSU daemon.
 
-# ----------------------------------------------------------------------------
-
 %package devel
 Summary:    Development files for ssu-sysinfo
 Requires:   %{name} = %{version}-%{release}
@@ -26,8 +23,6 @@ Requires:   %{name} = %{version}-%{release}
 This package contains headers and pkg-config files required for
 building applications that need to access static ssu related
 information without using D-Bus IPC.
-
-# ----------------------------------------------------------------------------
 
 %prep
 %setup -q -n %{name}-%{version}
@@ -45,15 +40,11 @@ make install DESTDIR=%{buildroot}
 
 %postun -p /sbin/ldconfig
 
-# ----------------------------------------------------------------------------
-
 %files
 %defattr(-,root,root,-)
 %{_libdir}/libssusysinfo.so.*
 %{_bindir}/ssu-sysinfo
 %doc COPYING
-
-# ----------------------------------------------------------------------------
 
 %files devel
 %defattr(-,root,root,-)
@@ -63,4 +54,3 @@ make install DESTDIR=%{buildroot}
 %dir %{_libdir}/pkgconfig
 %{_libdir}/pkgconfig/*.pc
 
-# ----------------------------------------------------------------------------
