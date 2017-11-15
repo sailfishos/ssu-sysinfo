@@ -73,6 +73,7 @@ void        inival_delete_cb (void *self);
  * inisec_t
  * ------------------------------------------------------------------------- */
 
+size_t      inisec_elem_count(const inisec_t *self);
 inival_t   *inisec_elem      (const inisec_t *self, size_t ind);
 const char *inisec_get_name  (const inisec_t *self);
 void        inisec_ctor      (inisec_t *self);
@@ -85,7 +86,6 @@ void        inisec_set       (inisec_t *self, const char *key, const char *val);
 const char *inisec_get       (inisec_t *self, const char *key, const char *val);
 int         inisec_has       (inisec_t *self, const char *key);
 void        inisec_del       (inisec_t *self, const char *key);
-int         inisec_emit      (const inisec_t *self, FILE *file);
 
 /* ------------------------------------------------------------------------- *
  * inifile_t
@@ -95,11 +95,13 @@ void         inifile_ctor             (inifile_t *self);
 void         inifile_dtor             (inifile_t *self);
 inifile_t  * inifile_create           (void);
 void         inifile_delete           (inifile_t *self);
+size_t       inifile_section_count    (const inifile_t *self);
 inisec_t   * inifile_get_section      (const inifile_t *self, const char *sec);
 inisec_t   * inifile_add_section      (inifile_t *self, const char *sec);
 void         inifile_set              (inifile_t *self, const char *sec, const char *key, const char *val);
 const char * inifile_get              (inifile_t *self, const char *sec, const char *key, const char *val);
 int          inifile_load             (inifile_t *self, const char *path, const char *defsec);
+void         inifile_dump             (inifile_t *self);
 
 # ifdef __cplusplus
 };

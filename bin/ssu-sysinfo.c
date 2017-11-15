@@ -2,7 +2,7 @@
  *
  * ssu-sysinfo - Command line utility for making queries
  * <p>
- * Copyright (c) 2016 Jolla Ltd.
+ * Copyright (c) 2016-2017 Jolla Ltd.
  * <p>
  * @author Simo Piiroinen <simo.piiroinen@jollamobile.com>
  *
@@ -62,36 +62,54 @@ get_cfg(void)
 /** Lookup table for long option parsing */
 const struct option opt_long[] =
 {
-    {"help",          no_argument, 0, 'h'},
-    {"usage",         no_argument, 0, 'h'},
-    {"model",         no_argument, 0, 'm'},
-    {"designation",   no_argument, 0, 'd'},
-    {"manufacturer",  no_argument, 0, 'M'},
-    {"pretty-name",   no_argument, 0, 'p'},
-    {"all",           no_argument, 0, 'a'},
+    {"help",             no_argument,       0, 'h'},
+    {"usage",            no_argument,       0, 'h'},
+    {"model",            no_argument,       0, 'm'},
+    {"designation",      no_argument,       0, 'd'},
+    {"manufacturer",     no_argument,       0, 'M'},
+    {"pretty-name",      no_argument,       0, 'p'},
+    {"all",              no_argument,       0, 'a'},
+    {"list-hw-features", no_argument,       0, 901 },
+    {"hw-features",      no_argument,       0, 'f'},
+    {"has-hw-feature",   required_argument, 0, 'F'},
+    {"list-hw-keys",     no_argument,       0, 902 },
+    {"hw-keys",          no_argument,       0, 'k'},
+    {"has-hw-key",       required_argument, 0, 'K'},
     {0, 0, 0, 0}
 };
 
 /** Lookup string for short option parsing */
 const char opt_short[] =
-"h" // --help
-"m" // --model
-"d" // --designation
-"M" // --manufacturer
-"p" // --pretty-name
-"a" // --all
+"h"  // --help
+"m"  // --model
+"d"  // --designation
+"M"  // --manufacturer
+"p"  // --pretty-name
+"a"  // --all
+"f"  // --hw-features
+"F:" // --has-hw-feature
+"k"  // --hw-keys
+"K:" // --has-hw-key
 ;
 
 /** Freeform usage text */
 const char opt_help[] =
 "\n"
-"  -h --help         Print usage information\n"
+"  -h --help                   Print usage information\n"
 "\n"
-"  -m --model        Print device model\n"
-"  -d --designation  Print device designation\n"
-"  -M --manufacturer Print device manufacturer\n"
-"  -p --pretty-name  Print device pretty name\n"
-"  -a --all          Print all of the above\n"
+"  -m --model                  Print device model\n"
+"  -d --designation            Print device designation\n"
+"  -M --manufacturer           Print device manufacturer\n"
+"  -p --pretty-name            Print device pretty name\n"
+"  -a --all                    Print all of the above\n"
+"\n"
+"  --list-hw-features          List all known hw features\n"
+"  -f --hw-features            Print available hw-features\n"
+"  -F --has-hw-feature=<NAME>  Check if hw-feature is available\n"
+"\n"
+"  --list-hw-keys              List all known hw keys\n"
+"  -k --hw-keys                Print available hw-keys\n"
+"  -K --has-hw-key=<NAME>      Check if hw-key is available\n"
 "\n"
 ;
 
@@ -147,6 +165,76 @@ output_pretty_name(void)
     printf("%s\n", ssusysinfo_device_pretty_name(get_cfg()));
 }
 
+/** Handler for --list-hw-features option
+ */
+static void
+output_list_hw_features(void)
+{
+    const char **arr = ssusysinfo_hw_feature_names();
+
+    for( size_t i = 0; arr && arr[i]; ++i )
+        printf("%s\n", arr[i]);
+
+    free(arr);
+}
+
+/** Handler for --hw-features option
+ */
+static void
+output_hw_features(void)
+{
+    hw_feature_t *arr = ssusysinfo_get_hw_features(get_cfg());
+
+    for( size_t i = 0; arr && arr[i]; ++i ) {
+        printf("%s\n", ssusysinfo_hw_feature_to_name(arr[i]));
+    }
+    free(arr);
+}
+
+/** Handler for --has-hw-feature=<NAME> option
+ */
+static bool
+require_has_hw_feature(const char *name)
+{
+    return ssusysinfo_has_hw_feature(get_cfg(),
+                                     ssusysinfo_hw_feature_from_name(name));
+}
+
+/** Handler for --list-hw-keys option
+ */
+static void
+output_list_hw_keys(void)
+{
+    const char **arr = ssusysinfo_hw_key_names();
+
+    for( size_t i = 0; arr && arr[i]; ++i )
+        printf("%s\n", arr[i]);
+
+    free(arr);
+}
+
+/** Handler for --hw-keys option
+ */
+static void
+output_hw_keys(void)
+{
+    hw_key_t *arr = ssusysinfo_get_hw_keys(get_cfg());
+
+    for( size_t i = 0; arr && arr[i]; ++i ) {
+        printf("%s\n", ssusysinfo_hw_key_to_name(arr[i]) ?: "unknown");
+    }
+    free(arr);
+}
+
+/** Handler for --has-hw-key=<NAME> option
+ */
+static bool
+require_has_hw_key(const char *name)
+{
+    return ssusysinfo_has_hw_key(get_cfg(),
+                                 ssusysinfo_hw_key_from_name(name));
+}
+
 /* ========================================================================= *
  * MAIN_ENTRY_POINT
  * ========================================================================= */
@@ -193,6 +281,32 @@ main(int ac, char **av)
 
         case 'a':
             output_all();
+            break;
+
+        case 901:
+            output_list_hw_features();
+            break;
+
+        case 'f':
+            output_hw_features();
+            break;
+
+        case 'F':
+            if( !require_has_hw_feature(optarg) )
+                goto EXIT;
+            break;
+
+        case 902:
+            output_list_hw_keys();
+            break;
+
+        case 'k':
+            output_hw_keys();
+            break;
+
+        case 'K':
+            if( !require_has_hw_key(optarg) )
+                goto EXIT;
             break;
 
         case '?':

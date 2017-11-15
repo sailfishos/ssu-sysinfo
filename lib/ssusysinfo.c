@@ -2,7 +2,7 @@
  *
  * ssu-sysinfo - Library API functions
  * <p>
- * Copyright (c) 2016 Jolla Ltd.
+ * Copyright (c) 2016-2017 Jolla Ltd.
  * <p>
  * @author Simo Piiroinen <simo.piiroinen@jollamobile.com>
  *
@@ -26,6 +26,8 @@
 #include "inifile.h"
 #include "xmalloc.h"
 #include "util.h"
+#include "hw_key.h"
+#include "hw_feature.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -60,6 +62,8 @@ void               ssusysinfo_delete_cb                   (void *self);
 
 static void        ssusysinfo_load_board_mappings         (ssusysinfo_t *self);
 static void        ssusysinfo_load_release_info           (ssusysinfo_t *self);
+static void        ssusysinfo_load_hw_settings            (ssusysinfo_t *self);
+
 static void        ssusysinfo_load                        (ssusysinfo_t *self);
 static void        ssusysinfo_unload                      (ssusysinfo_t *self);
 void               ssusysinfo_reload                      (ssusysinfo_t *self);
@@ -130,6 +134,17 @@ ssusysinfo_load_release_info(ssusysinfo_t *self)
     inifile_load(self->cfg_ini, "/etc/sailfish-release", "sailfish-release");
 }
 
+/** Load CSD hw feature configuration files
+ *
+ * @param self ssusysinfo object pointer
+ */
+static void
+ssusysinfo_load_hw_settings(ssusysinfo_t *self)
+{
+    inifile_load(self->cfg_ini, "/usr/share/csd/settings.d/hw-settings.ini",
+                 0);
+}
+
 /** Load all SSU configuration files
  *
  * @param self ssusysinfo object pointer
@@ -147,6 +162,11 @@ ssusysinfo_load(ssusysinfo_t *self)
 
     ssusysinfo_load_board_mappings(self);
     ssusysinfo_load_release_info(self);
+    ssusysinfo_load_hw_settings(self);
+
+#if 0 /* for devel time debugging */
+    inifile_dump(self->cfg_ini);
+#endif
 
 EXIT:
     return;
@@ -337,17 +357,17 @@ ssusysinfo_create(void)
 void
 ssusysinfo_delete(ssusysinfo_t *self)
 {
-  if( self != 0 )
-  {
-    ssusysinfo_dtor(self);
-    free(self);
-  }
+    if( self != 0 )
+    {
+        ssusysinfo_dtor(self);
+        free(self);
+    }
 }
 
 void
 ssusysinfo_delete_cb(void *self)
 {
-  ssusysinfo_delete(self);
+    ssusysinfo_delete(self);
 }
 
 void
@@ -447,4 +467,132 @@ ssusysinfo_device_pretty_name(ssusysinfo_t *self)
 {
     /* Always returns valid c-string */
     return ssusysinfo_device_attr(self, "prettyModel");
+}
+
+/* ------------------------------------------------------------------------- *
+ * HW Features
+ * ------------------------------------------------------------------------- */
+
+const char *
+ssusysinfo_hw_feature_to_name(hw_feature_t id)
+{
+    return hw_feature_is_valid(id) ? hw_feature_to_string(id) : 0;
+}
+
+hw_feature_t
+ssusysinfo_hw_feature_from_name(const char *name)
+{
+    return hw_feature_from_string(name);
+}
+
+bool
+ssusysinfo_has_hw_feature(ssusysinfo_t *self, hw_feature_t id)
+{
+    bool supported = false;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    if( !hw_feature_is_valid(id) )
+        goto EXIT;
+
+    const char *key = hw_feature_to_csd_key(id);
+    const char *val = inifile_get(self->cfg_ini, "features", key, 0);
+
+    if( val )
+        supported = (strtol(val, 0, 0) != 0);
+    else
+        supported = hw_feature_get_fallback(id);
+
+EXIT:
+    return supported;
+}
+
+hw_feature_t *
+ssusysinfo_get_hw_features(ssusysinfo_t *self)
+{
+    hw_feature_t *data = 0;
+    size_t        used = 0;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    data = xcalloc(Feature_Count, sizeof *data);
+
+    for( hw_feature_t id = Feature_Invalid + 1; id < Feature_Count; ++id ) {
+        if( ssusysinfo_has_hw_feature(self, id) )
+            data[used++] = id;
+    }
+    data[used] = Feature_Invalid;
+
+EXIT:
+    return data;
+}
+
+const char **
+ssusysinfo_hw_feature_names(void)
+{
+    return hw_feature_names();
+}
+
+/* ------------------------------------------------------------------------- *
+ * HW Keys
+ * ------------------------------------------------------------------------- */
+
+const char *
+ssusysinfo_hw_key_to_name(hw_key_t code)
+{
+    return hw_key_to_string(code);
+}
+
+hw_key_t
+ssusysinfo_hw_key_from_name(const char *name)
+{
+    return name ? hw_key_from_string(name) : 0;
+}
+
+hw_key_t *
+ssusysinfo_get_hw_keys(ssusysinfo_t *self)
+{
+    hw_key_t *data = 0;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    data = hw_key_parse_array(inifile_get(self->cfg_ini, "Keys", "Keys", 0));
+
+EXIT:
+    return data;
+}
+
+bool
+ssusysinfo_has_hw_key(ssusysinfo_t *self, hw_key_t code)
+{
+    bool supported = false;
+
+    hw_key_t *keys = 0;
+
+    if( !hw_key_is_valid(code) )
+        goto EXIT;
+
+    if( !(keys = ssusysinfo_get_hw_keys(self)) )
+        goto EXIT;
+
+    for( size_t i = 0; keys[i]; ++i ) {
+        if( keys[i] == code ) {
+            supported = true;
+            break;
+        }
+    }
+
+EXIT:
+    free(keys);
+
+    return supported;
+}
+
+const char **
+ssusysinfo_hw_key_names(void)
+{
+    return hw_key_names();
 }

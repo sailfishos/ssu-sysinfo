@@ -190,6 +190,16 @@ inisec_get_name(const inisec_t *self)
 }
 
 /* ------------------------------------------------------------------------- *
+ * inisec_elem_count
+ * ------------------------------------------------------------------------- */
+
+size_t
+inisec_elem_count(const inisec_t *self)
+{
+  return symtab_size(&self->is_values);
+}
+
+/* ------------------------------------------------------------------------- *
  * inisec_elem
  * ------------------------------------------------------------------------- */
 
@@ -368,6 +378,16 @@ inifile_delete(inifile_t *self)
 }
 
 /* ------------------------------------------------------------------------- *
+ * inifile_section_count
+ * ------------------------------------------------------------------------- */
+
+size_t
+inifile_section_count(const inifile_t *self)
+{
+  return symtab_size(&self->if_sections);
+}
+
+/* ------------------------------------------------------------------------- *
  * inifile_get_section
  * ------------------------------------------------------------------------- */
 
@@ -474,4 +494,22 @@ cleanup:
   }
 
   return err;
+}
+
+/* ------------------------------------------------------------------------- *
+ * inifile_dump
+ * ------------------------------------------------------------------------- */
+
+void
+inifile_dump(inifile_t *self)
+{
+  for( size_t i = 0; i < inifile_section_count(self); ++i ) {
+    inisec_t *sec = symtab_elem(&self->if_sections, i);
+    printf("[%s]\n", inisec_get_name(sec));
+
+    for( size_t j = 0; j < inisec_elem_count(sec); ++j ) {
+      inival_t *val = inisec_elem(sec, j);
+      printf("<%s> = <%s>\n", inival_get_key(val), inival_get_val(val));
+    }
+  }
 }
