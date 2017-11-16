@@ -28,9 +28,8 @@ information without using D-Bus IPC.
 %setup -q -n %{name}-%{version}
 
 %build
-util/verify_version.sh
 unset LD_AS_NEEDED
-make %{?jobs:-j%jobs}
+make %{?jobs:-j%jobs} VERSION=%{version}
 
 %install
 rm -rf %{buildroot}

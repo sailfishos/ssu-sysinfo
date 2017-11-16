@@ -1,10 +1,4 @@
 # ----------------------------------------------------------------------------
-# Package version
-# ----------------------------------------------------------------------------
-
-VERSION   := 1.1.0
-
-# ----------------------------------------------------------------------------
 # Shared object version
 # ----------------------------------------------------------------------------
 
@@ -20,12 +14,12 @@ SOVERS    := .so$(SOMAJOR)$(SOMINOR)$(SORELEASE)
 # Files to build / install
 # ----------------------------------------------------------------------------
 
+INSTALL_PC     += pkg-config/ssu-sysinfo.pc
+INSTALL_HDR    += lib/ssusysinfo.h
+
 TARGETS_DSO    += libssusysinfo$(SOVERS)
 TARGETS_BIN    += ssu-sysinfo
-TARGETS_ALL    += $(TARGETS_DSO) $(TARGETS_BIN) libssusysinfo$(SONAME)
-
-INSTALL_HDR    += lib/ssusysinfo.h
-INSTALL_PC     += pkg-config/ssu-sysinfo.pc
+TARGETS_ALL    += $(TARGETS_DSO) $(TARGETS_BIN) libssusysinfo$(SONAME) $(INSTALL_PC)
 
 # ----------------------------------------------------------------------------
 # Installation directories
@@ -186,6 +180,12 @@ monolith : $(monolith_OBJ)
 	$(CC) -o $@ $^ $(LDFLAGS) $(LDLIBS)
 clean::
 	$(RM) monolith
+
+# ----------------------------------------------------------------------------
+# Generate .pc file with correct version
+# ----------------------------------------------------------------------------
+$(INSTALL_PC): pkg-config/ssu-sysinfo.pc.in
+	sed -e "s/%VERSION%/$(VERSION)/g" pkg-config/ssu-sysinfo.pc.in > $(INSTALL_PC)
 
 # ----------------------------------------------------------------------------
 # Install to $(DESTDIR)
