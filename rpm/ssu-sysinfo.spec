@@ -1,7 +1,7 @@
 Name:       ssu-sysinfo
 
 Summary:    Tools and libraries for getting ssu information without D-Bus IPC
-Version:    1.1.2
+Version:    1.1.3
 Release:    0
 Group:      System/System Control
 License:    LGPLv2.1+ and BSD
