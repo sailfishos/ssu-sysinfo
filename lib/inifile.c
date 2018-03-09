@@ -462,7 +462,7 @@ inifile_load(inifile_t *self, const char *path, const char *defsec)
 
     if( *pos == 0 ) continue;
 
-    if( *pos == '#' ) continue;
+    if( *pos == ';' || *pos == '#' ) continue;
 
     if( *pos == BRA )
     {
