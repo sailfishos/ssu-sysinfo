@@ -141,8 +141,14 @@ ssusysinfo_load_release_info(ssusysinfo_t *self)
 static void
 ssusysinfo_load_hw_settings(ssusysinfo_t *self)
 {
-    inifile_load(self->cfg_ini, "/usr/share/csd/settings.d/hw-settings.ini",
-                 0);
+    glob_t gl = {};
+
+    if (glob("/usr/share/csd/settings.d/*hw-settings*.ini", 0, 0, &gl) == 0) {
+        for (size_t i = 0; i < gl.gl_pathc; ++i)
+            inifile_load(self->cfg_ini, gl.gl_pathv[i], 0);
+    }
+
+    globfree(&gl);
 }
 
 /** Load all SSU configuration files
