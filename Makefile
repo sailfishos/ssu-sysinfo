@@ -232,7 +232,7 @@ normalize::
 %.sp : %.q ; cproto -s < $< | prettyproto.py > $@ && cat $@
 
 mostlyclean::
-	$(RM) *.q *.p *.sp
+	$(RM) *.q *.p *.sp */*.q */*.p */*.sp
 
 # ----------------------------------------------------------------------------
 # Header dependecy scanning

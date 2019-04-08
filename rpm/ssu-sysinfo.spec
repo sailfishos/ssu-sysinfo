@@ -53,4 +53,3 @@ make install DESTDIR=%{buildroot}
 %{_libdir}/libssusysinfo.so
 %dir %{_libdir}/pkgconfig
 %{_libdir}/pkgconfig/*.pc
-

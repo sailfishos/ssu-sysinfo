@@ -25,7 +25,132 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
+
+/* ========================================================================= *
+ * Types
+ * ========================================================================= */
+
+typedef struct
+{
+  const char *name;
+  int         mask;
+  int         bits;
+} bitfield_t;
+
+/* ========================================================================= *
+ * Functions
+ * ========================================================================= */
+
+static char         *bitfield_repr          (const bitfield_t *lut, int bits, char *buf, size_t size);
+static void          del_cfg                (void);
+static ssusysinfo_t *get_cfg                (void);
+static void          output_usage           (const char *name);
+static void          output_ssu_info        (void);
+#if SSU_INCLUDE_CREDENTIAL_ITEMS
+static void          output_ssu_certificate (void);
+static void          output_ssu_private_key (void);
+#endif
+static void          output_brand           (void);
+static void          output_all             (void);
+static void          output_device_info     (void);
+static void          output_model           (void);
+static void          output_designation     (void);
+static void          output_manufacturer    (void);
+static void          output_pretty_name     (void);
+static void          output_list_hw_features(void);
+static void          output_hw_features     (void);
+static bool          require_has_hw_feature (const char *name);
+static void          output_list_hw_keys    (void);
+static void          output_hw_keys         (void);
+static bool          require_has_hw_key     (const char *name);
+
+/* ========================================================================= *
+ * BITFIELD
+ * ========================================================================= */
+
+static char *
+bitfield_repr(const bitfield_t *lut, int bits, char *buf, size_t size)
+{
+    char *pos = buf;
+    char *end = buf + size - 1;
+
+    auto void adds(const char *str) {
+        if( pos > buf && pos < end )
+            *pos++ = '|';
+        while( *str && pos < end )
+            *pos++ = *str++;
+    }
+
+    for( ; lut->name; ++lut ) {
+        if( (bits & lut->mask) == lut->bits ) {
+            bits &= ~lut->mask;
+            adds(lut->name);
+        }
+    }
+
+    if( bits ) {
+        char num[16];
+        snprintf(num, sizeof num, "0x%x", bits);
+        adds(num);
+    }
+
+    *pos = 0;
+
+    return buf;
+}
+
+static const bitfield_t bitfield_device_mode[] =
+{
+    {
+        .name = "DISABLE_REPO_MANAGER",
+        .mask = SSU_DEVICE_MODE_DISABLE_REPO_MANAGER,
+        .bits = SSU_DEVICE_MODE_DISABLE_REPO_MANAGER,
+    },
+    {
+        /* Neither RND nor RELEASE set -> RELEASE implied */
+        .name = "IMPLIED_RELEASE",
+        .mask = SSU_DEVICE_MODE_RND | SSU_DEVICE_MODE_RELEASE,
+        .bits = 0,
+    },
+    {
+        /* Both RND and RELEASE set -> RND plus RELEASE repos used */
+        .name = "RND_AND_RELEASE",
+        .mask = SSU_DEVICE_MODE_RND | SSU_DEVICE_MODE_RELEASE,
+        .bits = SSU_DEVICE_MODE_RND | SSU_DEVICE_MODE_RELEASE,
+    },
+    {
+        .name = "RND",
+        .mask = SSU_DEVICE_MODE_RND,
+        .bits = SSU_DEVICE_MODE_RND,
+    },
+    {
+        .name = "RELEASE",
+        .mask = SSU_DEVICE_MODE_RELEASE,
+        .bits = SSU_DEVICE_MODE_RELEASE,
+    },
+    {
+        .name = "LENIENT",
+        .mask = SSU_DEVICE_MODE_LENIENT,
+        .bits = SSU_DEVICE_MODE_LENIENT,
+    },
+    {
+        .name = "UPDATE",
+        .mask = SSU_DEVICE_MODE_UPDATE,
+        .bits = SSU_DEVICE_MODE_UPDATE,
+    },
+    {
+        .name = "APP_INSTALL",
+        .mask = SSU_DEVICE_MODE_APP_INSTALL,
+        .bits = SSU_DEVICE_MODE_APP_INSTALL,
+    },
+    {
+        .name = 0,
+        .mask = 0,
+        .bits = 0,
+    },
+};
 
 /* ========================================================================= *
  * LOAD ON DEMAND
@@ -68,7 +193,14 @@ const struct option opt_long[] =
     {"designation",      no_argument,       0, 'd'},
     {"manufacturer",     no_argument,       0, 'M'},
     {"pretty-name",      no_argument,       0, 'p'},
+    {"device-info",      no_argument,       0, 'D'},
+    {"brand",            no_argument,       0, 'b'},
+    {"ssu-info",         no_argument,       0, 'S'},
     {"all",              no_argument,       0, 'a'},
+#if SSU_INCLUDE_CREDENTIAL_ITEMS
+    {"ssu-certificate",  no_argument,       0, 'C'},
+    {"ssu-private-key",  no_argument,       0, 'P'},
+#endif
     {"list-hw-features", no_argument,       0, 901 },
     {"hw-features",      no_argument,       0, 'f'},
     {"has-hw-feature",   required_argument, 0, 'F'},
@@ -85,7 +217,14 @@ const char opt_short[] =
 "d"  // --designation
 "M"  // --manufacturer
 "p"  // --pretty-name
+"D"  // --device-info
+"b"  // --brand
+"S"  // --ssu-info
 "a"  // --all
+#if SSU_INCLUDE_CREDENTIAL_ITEMS
+"C"  // --ssu-certificate
+"P"  // --ssu-private-key
+#endif
 "f"  // --hw-features
 "F:" // --has-hw-feature
 "k"  // --hw-keys
@@ -101,7 +240,14 @@ const char opt_help[] =
 "  -d --designation            Print device designation\n"
 "  -M --manufacturer           Print device manufacturer\n"
 "  -p --pretty-name            Print device pretty name\n"
-"  -a --all                    Print all of the above\n"
+"  -D --device-info            Print all of the above\n"
+"  -b --brand                  Print ssu brand\n"
+"  -S --ssu-info               Print all ssu information\n"
+"  -a --all                    Print all device and ssu information\n"
+#if SSU_INCLUDE_CREDENTIAL_ITEMS
+"  -C --ssu-certificate        Print ssu certificate\n"
+"  -P --ssu-private-key        Print ssu private key\n"
+#endif
 "\n"
 "  --list-hw-features          List all known hw features\n"
 "  -f --hw-features            Print available hw-features\n"
@@ -122,15 +268,104 @@ output_usage(const char *name)
     exit(EXIT_SUCCESS);
 }
 
+static void
+output_ssu_info(void)
+{
+    ssusysinfo_t *info = get_cfg();
+
+    ssu_device_mode_t device_mode = ssusysinfo_ssu_device_mode(info);
+    char device_mode_repr[256];
+    bitfield_repr(bitfield_device_mode, (int)device_mode,
+                  device_mode_repr, sizeof device_mode_repr);
+
+    printf("registered: %s\n",            ssusysinfo_ssu_registered(info) ? "yes" : "no");
+    printf("device_mode: %d (%s)\n",      (int)device_mode, device_mode_repr);
+    printf("arch: %s\n",                  ssusysinfo_ssu_arch(info));
+    printf("brand: %s\n",                 ssusysinfo_ssu_brand(info));
+    printf("flavour: %s\n",               ssusysinfo_ssu_flavour(info));
+    printf("domain: %s\n",                ssusysinfo_ssu_domain(info));
+
+    printf("release: %s\n",               ssusysinfo_ssu_release(info));
+    printf("def_release: %s\n",           ssusysinfo_ssu_def_release(info));
+    printf("rnd_release: %s\n",           ssusysinfo_ssu_rnd_release(info));
+
+    printf("enabled_repos: %s\n",         ssusysinfo_ssu_enabled_repos(info));
+    printf("disabled_repos: %s\n",        ssusysinfo_ssu_disabled_repos(info));
+
+    printf("credentials_updated: %s\n",   ssusysinfo_ssu_last_credentials_update(info));
+    printf("credentials_scope: %s\n",     ssusysinfo_ssu_credentials_scope(info));
+
+    printf("credentials_url_jolla: %s\n", ssusysinfo_ssu_credentials_url_jolla(info));
+#if SSU_INCLUDE_CREDENTIAL_ITEMS
+    printf("credentials_username_jolla: %s\n", ssusysinfo_ssu_credentials_username_jolla(info));
+    printf("credentials_password_jolla: %s\n", ssusysinfo_ssu_credentials_password_jolla(info));
+#endif
+
+    printf("credentials_url_store: %s\n", ssusysinfo_ssu_credentials_url_store(info));
+#if SSU_INCLUDE_CREDENTIAL_ITEMS
+    printf("credentials_username_store: %s\n", ssusysinfo_ssu_credentials_username_store(info));
+    printf("credentials_password_store: %s\n", ssusysinfo_ssu_credentials_password_store(info));
+#endif
+
+    printf("default_rnd_domain: %s\n",    ssusysinfo_ssu_default_rnd_domain(info));
+    printf("home_url: %s\n",              ssusysinfo_ssu_home_url(info));
+}
+
+#if SSU_INCLUDE_CREDENTIAL_ITEMS
+/** Handler for --ssu-certificate option
+ */
+static void
+output_ssu_certificate(void)
+{
+    const char *text = ssusysinfo_ssu_certificate(get_cfg());
+    const char *tail = strrchr(text, '\n');
+    const char *feed = tail && tail[1] == 0 ? "" : "\n";
+    printf("%s%s", text, feed);
+}
+
+/** Handler for --ssu-private-key option
+ */
+static void
+output_ssu_private_key(void)
+{
+    const char *text = ssusysinfo_ssu_private_key(get_cfg());
+    const char *tail = strrchr(text, '\n');
+    const char *feed = tail && tail[1] == 0 ? "" : "\n";
+    printf("%s%s", text, feed);
+}
+#endif /* SSU_INCLUDE_CREDENTIAL_ITEMS */
+
+/** Handler for --brand option
+ */
+static void
+output_brand(void)
+{
+    printf("%s\n", ssusysinfo_ssu_brand(get_cfg()));
+}
+
 /** Handler for --all option
  */
 static void
 output_all(void)
 {
-    printf("model: %s\n",        ssusysinfo_device_model(get_cfg()));
-    printf("designation: %s\n",  ssusysinfo_device_designation(get_cfg()));
-    printf("manufacturer: %s\n", ssusysinfo_device_manufacturer(get_cfg()));
-    printf("pretty_name: %s\n",  ssusysinfo_device_pretty_name(get_cfg()));
+    printf("DEVICE INFO:\n");
+    output_device_info();
+    printf("\n");
+    printf("SSU INFO\n");
+    output_ssu_info();
+}
+
+/** Handler for --device-info option
+ */
+static void
+output_device_info(void)
+{
+    ssusysinfo_t *info = get_cfg();
+
+    printf("model: %s\n",        ssusysinfo_device_model(info));
+    printf("designation: %s\n",  ssusysinfo_device_designation(info));
+    printf("manufacturer: %s\n", ssusysinfo_device_manufacturer(info));
+    printf("pretty_name: %s\n",  ssusysinfo_device_pretty_name(info));
 }
 
 /** Handler for --model option
@@ -245,9 +480,9 @@ main(int ac, char **av)
     const char *progname  = av[0];
     int         exitcode  = EXIT_FAILURE;
 
-    /* Treat no-args as if --all option were given */
+    /* Treat no-args as if --device-info option were given */
     if( ac == 1 ) {
-        output_all();
+        output_device_info();
         goto DONE;
     }
 
@@ -279,9 +514,31 @@ main(int ac, char **av)
             output_pretty_name();
             break;
 
+        case 'D':
+            output_device_info();
+            break;
+
+        case 'b':
+            output_brand();
+            break;
+
+        case 'S':
+            output_ssu_info();
+            break;
+
         case 'a':
             output_all();
             break;
+
+#if SSU_INCLUDE_CREDENTIAL_ITEMS
+        case 'C':
+            output_ssu_certificate();
+            break;
+
+        case 'P':
+            output_ssu_private_key();
+            break;
+#endif
 
         case 901:
             output_list_hw_features();
