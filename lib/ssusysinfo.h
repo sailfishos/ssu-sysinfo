@@ -44,6 +44,30 @@ extern "C" {
  */
 typedef struct ssusysinfo_t ssusysinfo_t;
 
+/** SSU device mode bitfields
+ *
+ * @note This must be kept in sync with Ssu:DeviceMode C++ enum.
+ */
+typedef enum  {
+    /** Disable automagic repository management */
+    SSU_DEVICE_MODE_DISABLE_REPO_MANAGER = 1<<0,
+    /** Enable RnD mode for device */
+    SSU_DEVICE_MODE_RND                  = 1<<1,
+    /** Enable Release mode
+     *
+     * @note The release mode bit is useful only for enabling *also*
+     *       relase repositories in a device that is in rnd mode. Otherwise
+     *       not having rnd mode bit set implies release mode.
+     */
+    SSU_DEVICE_MODE_RELEASE              = 1<<2,
+    /** Disable strict mode (i.e., keep unmanaged repositories) */
+    SSU_DEVICE_MODE_LENIENT              = 1<<3,
+    /** Do repo isolation and similar bits important for updating devices */
+    SSU_DEVICE_MODE_UPDATE               = 1<<4,
+    /** Do repo isolation, but keep store repository enabled */
+    SSU_DEVICE_MODE_APP_INSTALL          = 1<<5,
+} ssu_device_mode_t;
+
 /* ========================================================================= *
  * FUNCTIONS
  * ========================================================================= */
@@ -194,6 +218,208 @@ const char   *ssusysinfo_device_manufacturer(ssusysinfo_t *self);
  * @return always returns non-null c-string
  */
 const char   *ssusysinfo_device_pretty_name (ssusysinfo_t *self);
+
+/** Query ssu config version number
+ *
+ * Currently fetches "configVersion" value from "General" section in ssu.ini.
+ *
+ * This value is used internally by SSU to deal with configuration file format
+ * changes and thus is unlikely to be of interest to other processes.
+ *
+ * @return config version number
+ */
+int ssusysinfo_ssu_config_version(ssusysinfo_t *self);
+
+/** Query ssu registration status
+ *
+ * Currently fetches "registered" value from "General" section in ssu.ini.
+ *
+ * @return true if device is registered, false otherwise
+ */
+bool ssusysinfo_ssu_registered(ssusysinfo_t *self);
+
+/** Query ssu device mode setting
+ *
+ * Translates "deviceMode" value from "General" section in ssu.ini file
+ * into a number.
+ *
+ * @return device mode bitmask
+ */
+ssu_device_mode_t ssusysinfo_ssu_device_mode(ssusysinfo_t *self);
+
+/** Query ssu in rnd mode
+ *
+ * Checks if return value from #ssusysinfo_ssu_device_mode()
+ * includes also #SSU_DEVICE_MODE_RND bit.
+ *
+ * @return true if device is in rnd mode, false otherwise
+ */
+bool ssusysinfo_ssu_in_rnd_mode(ssusysinfo_t *self);
+
+/** Query ssu architecture setting
+ *
+ * Currently fethes "arch" value from "General" section in ssu.ini.
+ *
+ * Expected values: "armv7hl", "amd64", ...
+ *
+ * @return architecture name
+ */
+const char *ssusysinfo_ssu_arch(ssusysinfo_t *self);
+
+/** Query ssu brand setting
+ *
+ * Currently fetches "brand" value from "General" section in ssu.ini.
+ *
+ * Expected values: "jolla", "<customer_specific_name>", ...
+ *
+ * @return brand name, or "UNKNOWN" if not specified
+ */
+const char *ssusysinfo_ssu_brand(ssusysinfo_t *self);
+
+/** Query ssu flavour setting
+ *
+ * Currently fetches "flavour" value from "General" section in ssu.ini.
+ *
+ * Expected values: "release", "testing", "devel", ...
+ *
+ * @note Flavor is meaningful only in rnd mode.
+ *
+ * @see #ssusysinfo_ssu_in_rnd_mode()
+ *
+ * @return flavour name
+ */
+const char *ssusysinfo_ssu_flavour(ssusysinfo_t *self);
+
+/** Query ssu domain setting
+ *
+ * Currently fetches "domain" value from "General" section in ssu.ini.
+ *
+ * Expected values: "sales", "jolla", "<customer_name>"
+ *
+ * @return domain name
+ */
+const char *ssusysinfo_ssu_domain(ssusysinfo_t *self);
+
+/** Query ssu release version
+ *
+ * Returns rnd / sales release version depending on device mode.
+ *
+ * Expected values: "1.2.3.4", "latest", ...
+ *
+ * @see #ssusysinfo_ssu_in_rnd_mode()
+ * @see #ssusysinfo_ssu_def_release()
+ * @see #ssusysinfo_ssu_rnd_release()
+ *
+ * @return release version string
+ */
+const char *ssusysinfo_ssu_release(ssusysinfo_t *self);
+
+/** Query ssu "sales" release version
+ *
+ * Currently fetches "release" value from "General" section in ssu.ini.
+ *
+ * @note This release version is used when device is not in rnd mode.
+ *
+ * @see #ssusysinfo_ssu_in_rnd_mode()
+ * @see #ssusysinfo_ssu_release()
+ *
+ * @return release version string
+ */
+const char *ssusysinfo_ssu_def_release(ssusysinfo_t *self);
+
+/** Query ssu "rnd" release version
+ *
+ * Currently fetches "rndRelease" value from "General" section in ssu.ini.
+ *
+ * @note This release version is used when device is in rnd mode.
+ *
+ * @see #ssusysinfo_ssu_in_rnd_mode()
+ * @see #ssusysinfo_ssu_release()
+ *
+ * @return release version string
+ */
+const char *ssusysinfo_ssu_rnd_release(ssusysinfo_t *self);
+
+/** Query ssu enabled repositories setting
+ *
+ * Currently fetches "enabled-repos" value from "General" section in ssu.ini.
+ *
+ * Expected values: "tools, store, something_else", ...
+ *
+ * Used for adding custom/user repositories.
+ *
+ * @return list of repository names
+ */
+const char *ssusysinfo_ssu_enabled_repos(ssusysinfo_t *self);
+
+/** Query ssu disabled repositories setting
+ *
+ * Currently fetches "disabled-repos" value from "General" section in ssu.ini.
+ *
+ * Expected values: "home, something_else", ...
+ *
+ * Used for blacklisting repositories.
+ *
+ * @return list of repository names
+ */
+const char *ssusysinfo_ssu_disabled_repos(ssusysinfo_t *self);
+
+/** Query ssu last credential update timestamp
+ *
+ * Translates "lastCredentialsUpdate" value from "General" section in ssu.ini file
+ * into a ISO-8601 compatible time value ("yyyy-mm-ddThh:mm:ss±hh:mm").
+ *
+ * @return last credential update time
+ */
+const char *ssusysinfo_ssu_last_credentials_update(ssusysinfo_t *self);
+
+/** Query ssu credentials scope setting
+ *
+ * Currently fetches "credentials-scope" value from "General" section in ssu.ini.
+ *
+ * Expected values: "jolla", ...
+ *
+ * @return scope name
+ */
+const char *ssusysinfo_ssu_credentials_scope(ssusysinfo_t *self);
+
+/** Query ssu jolla credentials url setting
+ *
+ * Currently fetches "credentials-url-jolla" value from "General" section in ssu.ini.
+ *
+ * @return url
+ */
+const char *ssusysinfo_ssu_credentials_url_jolla(ssusysinfo_t *self);
+
+/** Query ssu store credentials url setting
+ *
+ * Currently fetches "credentials-url-store" value from "General" section in ssu.ini.
+ *
+ * @return url
+ */
+const char *ssusysinfo_ssu_credentials_url_store(ssusysinfo_t *self);
+
+/** Query ssu default rnd domain setting
+ *
+ * Currently fetches "default-rnd-domain" value from "General" section in ssu.ini.
+ *
+ * Expected values: "jolla", ...
+ *
+ * Used as fallback domain in registration.
+ *
+ * @return domain name
+ */
+const char *ssusysinfo_ssu_default_rnd_domain(ssusysinfo_t *self);
+
+/** Query ssu home url setting
+ *
+ * Currently fetches "home-url" value from "General" section in ssu.ini.
+ *
+ * Used for testing / automation.
+ *
+ * @return url
+ */
+const char *ssusysinfo_ssu_home_url(ssusysinfo_t *self);
 
 /** HW features available on the device
  *
