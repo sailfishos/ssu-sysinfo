@@ -37,6 +37,22 @@
 #include <endian.h>
 
 /* ========================================================================= *
+ * CONSTANTS
+ * ========================================================================= */
+
+/** SSU Configuration version ssu-sysinfo is known to be compatible with
+ *
+ * SSU configuration version change involves automated edits to data
+ * already present on devices in active use.
+ *
+ * Assumption is that version upgrades are going to be mostly harmless
+ * from ssu-sysinfo point of view, but when a version bump is detected
+ * a warning is emitted to journal to prompt manual check & bringing
+ * ssu-sysinfo back in sync with ssu.
+ */
+#define EXPECTED_SSU_CONFIG_VERSION 13
+
+/* ========================================================================= *
  * TYPES
  * ========================================================================= */
 
@@ -544,12 +560,7 @@ ssusysinfo_load_ssu_config(ssusysinfo_t *self)
 {
     inifile_load(self->ssu_ini, "/etc/ssu/ssu.ini", 0);
 
-    /* Assumption: SSU itself will migrate configuration
-     *             data to up-to-date version, and we just
-     *             need to check that we stay in sync with
-     *             what ssu considers the latest.
-     */
-    int version_want = 12;
+    int version_want = EXPECTED_SSU_CONFIG_VERSION;
     int version_have = ssusysinfo_ssu_config_version(self);
     if( version_have != version_want ) {
         log_warning("expected ssu config version %d, found %d",
