@@ -30,11 +30,11 @@ information without using D-Bus IPC.
 %build
 util/verify_version.sh
 unset LD_AS_NEEDED
-make %{?jobs:-j%jobs}
+make _LIBDIR=%{_libdir} %{?jobs:-j%jobs}
 
 %install
 rm -rf %{buildroot}
-make install DESTDIR=%{buildroot}
+make _LIBDIR=%{_libdir} install DESTDIR=%{buildroot}
 
 %post -p /sbin/ldconfig
 
