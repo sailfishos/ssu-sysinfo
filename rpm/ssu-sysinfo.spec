@@ -1,7 +1,7 @@
 Name:       ssu-sysinfo
 
 Summary:    Tools and libraries for getting ssu information without D-Bus IPC
-Version:    1.2.3
+Version:    1.2.4
 Release:    0
 License:    LGPLv2+ and BSD
 URL:        https://git.merproject.org/mer-core/ssu-sysinfo
