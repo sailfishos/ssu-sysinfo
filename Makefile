@@ -197,7 +197,7 @@ install ::
 	install -m 755 $(TARGETS_BIN) $(DESTDIR)$(_BINDIR)/
 	# dynamic libraries
 	install -d -m 755 $(DESTDIR)$(_LIBDIR)
-	install -m 644 $(TARGETS_DSO) $(DESTDIR)$(_LIBDIR)/
+	install -m 755 $(TARGETS_DSO) $(DESTDIR)$(_LIBDIR)/
 	# headers
 	install -d -m 755 $(DESTDIR)$(_INCLUDEDIR)/ssusysinfo
 	install -m 644 $(INSTALL_HDR) $(DESTDIR)$(_INCLUDEDIR)/ssusysinfo/
