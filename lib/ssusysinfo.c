@@ -50,7 +50,7 @@
  * a warning is emitted to journal to prompt manual check & bringing
  * ssu-sysinfo back in sync with ssu.
  */
-#define EXPECTED_SSU_CONFIG_VERSION 13
+#define EXPECTED_SSU_CONFIG_VERSION 14
 
 /* ========================================================================= *
  * TYPES
