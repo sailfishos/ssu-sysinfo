@@ -2,7 +2,7 @@
  *
  * ssu-sysinfo - Command line utility for making queries
  * <p>
- * Copyright (c) 2016-2017 Jolla Ltd.
+ * Copyright (c) 2016 - 2020 Jolla Ltd.
  * <p>
  * @author Simo Piiroinen <simo.piiroinen@jollamobile.com>
  *
