@@ -52,7 +52,11 @@ static void          output_ssu_info        (void);
 static void          output_ssu_certificate (void);
 static void          output_ssu_private_key (void);
 #endif
+static void          output_arch            (void);
 static void          output_brand           (void);
+static void          output_flavour         (void);
+static void          output_domain          (void);
+static void          output_release         (void);
 static void          output_all             (void);
 static void          output_device_info     (void);
 static void          output_model           (void);
@@ -184,6 +188,10 @@ get_cfg(void)
  * COMMAND LINE OPTIONS
  * ========================================================================= */
 
+// Unused short options:
+// - B - - E F G H I J - L - N O - Q R - T U V W X Y Z
+// - - c - e - g - i j - - - - o - q - s t u v w x y z
+
 /** Lookup table for long option parsing */
 const struct option opt_long[] =
 {
@@ -194,7 +202,11 @@ const struct option opt_long[] =
     {"manufacturer",     no_argument,       0, 'M'},
     {"pretty-name",      no_argument,       0, 'p'},
     {"device-info",      no_argument,       0, 'D'},
+    {"arch",             no_argument,       0, 'A'},
     {"brand",            no_argument,       0, 'b'},
+    {"flavour",          no_argument,       0, 'l'},
+    {"domain",           no_argument,       0, 'n'},
+    {"release",          no_argument,       0, 'r'},
     {"ssu-info",         no_argument,       0, 'S'},
     {"all",              no_argument,       0, 'a'},
 #if SSU_INCLUDE_CREDENTIAL_ITEMS
@@ -218,7 +230,11 @@ const char opt_short[] =
 "M"  // --manufacturer
 "p"  // --pretty-name
 "D"  // --device-info
+"A"  // --arch
 "b"  // --brand
+"l"  // --flavour
+"n"  // --domain
+"r"  // --release
 "S"  // --ssu-info
 "a"  // --all
 #if SSU_INCLUDE_CREDENTIAL_ITEMS
@@ -241,7 +257,11 @@ const char opt_help[] =
 "  -M --manufacturer           Print device manufacturer\n"
 "  -p --pretty-name            Print device pretty name\n"
 "  -D --device-info            Print all of the above\n"
+"  -A --arch                   Print ssu arch\n"
 "  -b --brand                  Print ssu brand\n"
+"  -l --flavour                Print ssu flavour\n"
+"  -n --domain                 Print ssu domain\n"
+"  -r --release                Print ssu release\n"
 "  -S --ssu-info               Print all ssu information\n"
 "  -a --all                    Print all device and ssu information\n"
 #if SSU_INCLUDE_CREDENTIAL_ITEMS
@@ -335,12 +355,44 @@ output_ssu_private_key(void)
 }
 #endif /* SSU_INCLUDE_CREDENTIAL_ITEMS */
 
+/** Handler for --arch option
+ */
+static void
+output_arch(void)
+{
+    printf("%s\n", ssusysinfo_ssu_arch(get_cfg()));
+}
+
 /** Handler for --brand option
  */
 static void
 output_brand(void)
 {
     printf("%s\n", ssusysinfo_ssu_brand(get_cfg()));
+}
+
+/** Handler for --flavour option
+ */
+static void
+output_flavour(void)
+{
+    printf("%s\n", ssusysinfo_ssu_flavour(get_cfg()));
+}
+
+/** Handler for --domain option
+ */
+static void
+output_domain(void)
+{
+    printf("%s\n", ssusysinfo_ssu_domain(get_cfg()));
+}
+
+/** Handler for --release option
+ */
+static void
+output_release(void)
+{
+    printf("%s\n", ssusysinfo_ssu_release(get_cfg()));
 }
 
 /** Handler for --all option
@@ -518,8 +570,24 @@ main(int ac, char **av)
             output_device_info();
             break;
 
+        case 'A':
+            output_arch();
+            break;
+
         case 'b':
             output_brand();
+            break;
+
+        case 'l':
+            output_flavour();
+            break;
+
+        case 'n':
+            output_domain();
+            break;
+
+        case 'r':
+            output_release();
             break;
 
         case 'S':
