@@ -1,7 +1,7 @@
 Name:       ssu-sysinfo
 
 Summary:    Tools and libraries for getting ssu information without D-Bus IPC
-Version:    1.3.2
+Version:    1.3.3
 Release:    0
 License:    LGPLv2+ and BSD
 URL:        https://github.com/sailfishos/ssu-sysinfo/
@@ -29,10 +29,10 @@ information without using D-Bus IPC.
 %build
 util/verify_version.sh
 unset LD_AS_NEEDED
-%make_build
+make _LIBDIR=%{_libdir} %{_smp_mflags}
 
 %install
-%make_install
+make _LIBDIR=%{_libdir} install DESTDIR=%{buildroot}
 
 %post -p /sbin/ldconfig
 
