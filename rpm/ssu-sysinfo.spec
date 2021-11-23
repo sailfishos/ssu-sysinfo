@@ -1,7 +1,7 @@
 Name:       ssu-sysinfo
 
 Summary:    Tools and libraries for getting ssu information without D-Bus IPC
-Version:    1.3.0
+Version:    1.3.2
 Release:    0
 License:    LGPLv2+ and BSD
 URL:        https://github.com/sailfishos/ssu-sysinfo/
