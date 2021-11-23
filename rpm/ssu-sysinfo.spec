@@ -4,7 +4,7 @@ Summary:    Tools and libraries for getting ssu information without D-Bus IPC
 Version:    1.3.0
 Release:    0
 License:    LGPLv2+ and BSD
-URL:        https://git.merproject.org/mer-core/ssu-sysinfo
+URL:        https://github.com/sailfishos/ssu-sysinfo/
 Source0:    %{name}-%{version}.tar.bz2
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
@@ -29,11 +29,10 @@ information without using D-Bus IPC.
 %build
 util/verify_version.sh
 unset LD_AS_NEEDED
-make _LIBDIR=%{_libdir} %{?jobs:-j%jobs}
+%make_build
 
 %install
-rm -rf %{buildroot}
-make _LIBDIR=%{_libdir} install DESTDIR=%{buildroot}
+%make_install
 
 %post -p /sbin/ldconfig
 
@@ -41,9 +40,9 @@ make _LIBDIR=%{_libdir} install DESTDIR=%{buildroot}
 
 %files
 %defattr(-,root,root,-)
+%license COPYING LICENSE.BSD-3CLAUSE LICENSE.LGPL-v2.1
 %{_libdir}/libssusysinfo.so.*
 %{_bindir}/ssu-sysinfo
-%doc COPYING
 
 %files devel
 %defattr(-,root,root,-)
