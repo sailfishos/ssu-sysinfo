@@ -1,8 +1,9 @@
 /******************************************************************************
 ** This file is part of profile-qt
 **
-** Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
+** Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
 ** All rights reserved.
+** Copyright (c) 2016 - 2022 Jolla Ltd.
 **
 ** Contact: Sakari Poussa <sakari.poussa@nokia.com>
 **
@@ -41,6 +42,7 @@
 #include "logging.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 /* ========================================================================= *
  * Config
@@ -477,6 +479,22 @@ inifile_load(inifile_t *self, const char *path, const char *defsec)
 
     if( sec && *key )
     {
+      if( defsec )
+      {
+        /* Use of default section implies files like /etc/os-release
+         * that are shell scripts rather than ini files and thus can
+         * contain quoted values.
+         */
+        if( *val == '"' || *val == '\'' )
+        {
+          char *end = strrchr(val + 1, *val);
+          if( end )
+          {
+            *end = 0;
+            strutil_trim(++val);
+          }
+        }
+      }
       inisec_set(sec, key, val);
     }
   }
