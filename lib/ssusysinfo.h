@@ -2,9 +2,9 @@
  *
  * ssu-sysinfo - Library API functions
  * <p>
- * Copyright (c) 2016-2017 Jolla Ltd.
+ * Copyright (c) 2016 - 2022 Jolla Ltd.
  * <p>
- * @author Simo Piiroinen <simo.piiroinen@jollamobile.com>
+ * @author Simo Piiroinen <simo.piiroinen@jolla.com>
  *
  * ssu-sysinfo is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -420,6 +420,66 @@ const char *ssusysinfo_ssu_default_rnd_domain(ssusysinfo_t *self);
  * @return url
  */
 const char *ssusysinfo_ssu_home_url(ssusysinfo_t *self);
+
+/** Query OS name
+ *
+ * @since ssu-sysinfo 1.4.0
+ *
+ * Currently fetches "NAME=<name>" record from /etc/os-release file.
+ *
+ * Expected values: "Sailfish OS", ...
+ *
+ * @return os name
+ */
+const char *ssusysinfo_os_name(ssusysinfo_t *self);
+
+/** Query OS version number
+ *
+ * @since ssu-sysinfo 1.4.0
+ *
+ * Currently fetches "VERSION_ID=<version>" record from /etc/os-release file.
+ *
+ * Expected values: "4.2.0.10", ...
+ *
+ * @return os version
+ */
+const char *ssusysinfo_os_version(ssusysinfo_t *self);
+
+/** Query OS version description
+ *
+ * @since ssu-sysinfo 1.4.0
+ *
+ * Currently fetches "VERSION=<version_description>" record from /etc/os-release file.
+ *
+ * Expected values: "4.2.0.10 (Verla)", "4.2.0.11 (Verla) (devel)", ...
+ *
+ * @return os version description
+ */
+const char *ssusysinfo_os_pretty_version(ssusysinfo_t *self);
+
+/** Query hw version number
+ *
+ * @since ssu-sysinfo 1.4.0
+ *
+ * Currently fetches "VERSION_ID=<version>" record from /etc/hw-release file.
+ *
+ * Expected values: "0.0.4.338", ...
+ *
+ * @return hw version
+ */
+const char *ssusysinfo_hw_version(ssusysinfo_t *self);
+
+/** Query hw version description
+ *
+ * @since ssu-sysinfo 1.4.0
+ *
+ * Currently fetches "VERSION=<version_description>" record from /etc/hw-release file.
+ *
+ * Expected values: "0.0.4.338", "0.0.4.338 (devel)", ...
+ *
+ * @return hw version description
+ */
+const char *ssusysinfo_hw_pretty_version(ssusysinfo_t *self);
 
 /** HW features available on the device
  *

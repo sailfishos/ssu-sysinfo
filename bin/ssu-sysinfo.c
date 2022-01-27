@@ -2,9 +2,9 @@
  *
  * ssu-sysinfo - Command line utility for making queries
  * <p>
- * Copyright (c) 2016 - 2020 Jolla Ltd.
+ * Copyright (c) 2016 - 2022 Jolla Ltd.
  * <p>
- * @author Simo Piiroinen <simo.piiroinen@jollamobile.com>
+ * @author Simo Piiroinen <simo.piiroinen@jolla.com>
  *
  * ssu-sysinfo is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,32 +43,39 @@ typedef struct
  * Functions
  * ========================================================================= */
 
-static char         *bitfield_repr          (const bitfield_t *lut, int bits, char *buf, size_t size);
-static void          del_cfg                (void);
-static ssusysinfo_t *get_cfg                (void);
-static void          output_usage           (const char *name);
-static void          output_ssu_info        (void);
+static char         *bitfield_repr                 (const bitfield_t *lut, int bits, char *buf, size_t size);
+static void          del_cfg                       (void);
+static ssusysinfo_t *get_cfg                       (void);
+static void          output_usage                  (const char *name);
+static void          output_ssu_info               (void);
 #if SSU_INCLUDE_CREDENTIAL_ITEMS
-static void          output_ssu_certificate (void);
-static void          output_ssu_private_key (void);
+static void          output_ssu_certificate        (void);
+static void          output_ssu_private_key        (void);
 #endif
-static void          output_arch            (void);
-static void          output_brand           (void);
-static void          output_flavour         (void);
-static void          output_domain          (void);
-static void          output_release         (void);
-static void          output_all             (void);
-static void          output_device_info     (void);
-static void          output_model           (void);
-static void          output_designation     (void);
-static void          output_manufacturer    (void);
-static void          output_pretty_name     (void);
-static void          output_list_hw_features(void);
-static void          output_hw_features     (void);
-static bool          require_has_hw_feature (const char *name);
-static void          output_list_hw_keys    (void);
-static void          output_hw_keys         (void);
-static bool          require_has_hw_key     (const char *name);
+static void          output_arch                   (void);
+static void          output_brand                  (void);
+static void          output_flavour                (void);
+static void          output_domain                 (void);
+static void          output_release                (void);
+static void          output_all                    (void);
+static void          output_device_info            (void);
+static void          output_model                  (void);
+static void          output_designation            (void);
+static void          output_manufacturer           (void);
+static void          output_pretty_name            (void);
+static void          output_list_hw_features       (void);
+static void          output_hw_features            (void);
+static bool          require_has_hw_feature        (const char *name);
+static void          output_list_hw_keys           (void);
+static void          output_hw_keys                (void);
+static bool          require_has_hw_key            (const char *name);
+static void          output_os_name                (void);
+static void          output_os_version             (void);
+static void          output_os_pretty_version      (void);
+static void          output_os_info                (void);
+static void          output_hw_version             (void);
+static void          output_hw_pretty_version      (void);
+static void          output_hw_info                (void);
 
 /* ========================================================================= *
  * BITFIELD
@@ -189,36 +196,41 @@ get_cfg(void)
  * ========================================================================= */
 
 // Unused short options:
-// - B - - E F G H I J - L - N O - Q R - T U V W X Y Z
-// - - c - e - g - i j - - - - o - q - s t u v w x y z
+// - - - - E - G H I J - L - N - - Q R - T U V W X Y Z
+// - - c - e - g - i j - - - - - - q - s t u v w x y z
 
 /** Lookup table for long option parsing */
 const struct option opt_long[] =
 {
-    {"help",             no_argument,       0, 'h'},
-    {"usage",            no_argument,       0, 'h'},
-    {"model",            no_argument,       0, 'm'},
-    {"designation",      no_argument,       0, 'd'},
-    {"manufacturer",     no_argument,       0, 'M'},
-    {"pretty-name",      no_argument,       0, 'p'},
-    {"device-info",      no_argument,       0, 'D'},
-    {"arch",             no_argument,       0, 'A'},
-    {"brand",            no_argument,       0, 'b'},
-    {"flavour",          no_argument,       0, 'l'},
-    {"domain",           no_argument,       0, 'n'},
-    {"release",          no_argument,       0, 'r'},
-    {"ssu-info",         no_argument,       0, 'S'},
-    {"all",              no_argument,       0, 'a'},
+    {"help",                    no_argument,       0, 'h'},
+    {"usage",                   no_argument,       0, 'h'},
+    {"model",                   no_argument,       0, 'm'},
+    {"designation",             no_argument,       0, 'd'},
+    {"manufacturer",            no_argument,       0, 'M'},
+    {"pretty-name",             no_argument,       0, 'p'},
+    {"device-info",             no_argument,       0, 'D'},
+    {"arch",                    no_argument,       0, 'A'},
+    {"brand",                   no_argument,       0, 'b'},
+    {"flavour",                 no_argument,       0, 'l'},
+    {"domain",                  no_argument,       0, 'n'},
+    {"release",                 no_argument,       0, 'r'},
+    {"ssu-info",                no_argument,       0, 'S'},
+    {"all",                     no_argument,       0, 'a'},
 #if SSU_INCLUDE_CREDENTIAL_ITEMS
-    {"ssu-certificate",  no_argument,       0, 'C'},
-    {"ssu-private-key",  no_argument,       0, 'P'},
+    {"ssu-certificate",         no_argument,       0, 'C'},
+    {"ssu-private-key",         no_argument,       0, 'P'},
 #endif
-    {"list-hw-features", no_argument,       0, 901 },
-    {"hw-features",      no_argument,       0, 'f'},
-    {"has-hw-feature",   required_argument, 0, 'F'},
-    {"list-hw-keys",     no_argument,       0, 902 },
-    {"hw-keys",          no_argument,       0, 'k'},
-    {"has-hw-key",       required_argument, 0, 'K'},
+    {"list-hw-features",        no_argument,       0, 901 },
+    {"hw-features",             no_argument,       0, 'f'},
+    {"has-hw-feature",          required_argument, 0, 'F'},
+    {"list-hw-keys",            no_argument,       0, 902 },
+    {"hw-keys",                 no_argument,       0, 'k'},
+    {"has-hw-key",              required_argument, 0, 'K'},
+    {"os-name",                 no_argument,       0, 'O'},
+    {"os-version",              no_argument,       0, 'o'},
+    {"os-pretty-version",       no_argument,       0, 903},
+    {"hw-version",              no_argument,       0, 'B'},
+    {"hw-pretty-version",       no_argument,       0, 904},
     {0, 0, 0, 0}
 };
 
@@ -245,6 +257,9 @@ const char opt_short[] =
 "F:" // --has-hw-feature
 "k"  // --hw-keys
 "K:" // --has-hw-key
+"O"  // --os-name
+"o"  // --os-version
+"B"  // --hw-version
 ;
 
 /** Freeform usage text */
@@ -276,6 +291,13 @@ const char opt_help[] =
 "  --list-hw-keys              List all known hw keys\n"
 "  -k --hw-keys                Print available hw-keys\n"
 "  -K --has-hw-key=<NAME>      Check if hw-key is available\n"
+"\n"
+"  -O --os-name                Print os name\n"
+"  -o --os-version             Print os version number\n"
+"  --os-pretty-version         Print os version description\n"
+"\n"
+"  -B --hw-version             Print hw version number\n"
+"  --hw-pretty-version         Print hw version description\n"
 "\n"
 ;
 
@@ -403,8 +425,14 @@ output_all(void)
     printf("DEVICE INFO:\n");
     output_device_info();
     printf("\n");
-    printf("SSU INFO\n");
+    printf("SSU INFO:\n");
     output_ssu_info();
+    printf("\n");
+    printf("OS INFO:\n");
+    output_os_info();
+    printf("\n");
+    printf("HW INFO:\n");
+    output_hw_info();
 }
 
 /** Handler for --device-info option
@@ -522,6 +550,67 @@ require_has_hw_key(const char *name)
                                  ssusysinfo_hw_key_from_name(name));
 }
 
+/** Handler for --os-name option
+ */
+static void
+output_os_name(void)
+{
+    printf("%s\n", ssusysinfo_os_name(get_cfg()));
+}
+
+/** Handler for --os-version option
+ */
+static void
+output_os_version(void)
+{
+    printf("%s\n", ssusysinfo_os_version(get_cfg()));
+}
+
+/** Handler for --os-pretty-version option
+ */
+static void
+output_os_pretty_version(void)
+{
+    printf("%s\n", ssusysinfo_os_pretty_version(get_cfg()));
+}
+
+/** Output all OS info fields
+ */
+static void
+output_os_info(void)
+{
+    ssusysinfo_t *info = get_cfg();
+    printf("os_name: %s\n", ssusysinfo_os_name(info));
+    printf("os_version: %s\n", ssusysinfo_os_version(info));
+    printf("os_pretty_version: %s\n", ssusysinfo_os_pretty_version(info));
+}
+
+/** Handler for --hw-version option
+ */
+static void
+output_hw_version(void)
+{
+    printf("%s\n", ssusysinfo_hw_version(get_cfg()));
+}
+
+/** Handler for --hw-pretty-version option
+ */
+static void
+output_hw_pretty_version(void)
+{
+    printf("%s\n", ssusysinfo_hw_pretty_version(get_cfg()));
+}
+
+/** Output all hw info fields
+ */
+static void
+output_hw_info(void)
+{
+    ssusysinfo_t *info = get_cfg();
+    printf("hw_version: %s\n", ssusysinfo_hw_version(info));
+    printf("hw_pretty_version: %s\n", ssusysinfo_hw_pretty_version(info));
+}
+
 /* ========================================================================= *
  * MAIN_ENTRY_POINT
  * ========================================================================= */
@@ -632,6 +721,26 @@ main(int ac, char **av)
         case 'K':
             if( !require_has_hw_key(optarg) )
                 goto EXIT;
+            break;
+
+        case 'O':
+            output_os_name();
+            break;
+
+        case 'o':
+            output_os_version();
+            break;
+
+        case 903:
+            output_os_pretty_version();
+            break;
+
+        case 'B':
+            output_hw_version();
+            break;
+
+        case 904:
+            output_hw_pretty_version();
             break;
 
         case '?':

@@ -2,9 +2,9 @@
  *
  * ssu-sysinfo - Library API functions
  * <p>
- * Copyright (c) 2016-2017 Jolla Ltd.
+ * Copyright (c) 2016 - 2022 Jolla Ltd.
  * <p>
- * @author Simo Piiroinen <simo.piiroinen@jollamobile.com>
+ * @author Simo Piiroinen <simo.piiroinen@jolla.com>
  *
  * ssu-sysinfo is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,6 +32,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include <glob.h>
 #include <time.h>
 #include <endian.h>
@@ -51,6 +53,26 @@
  * ssu-sysinfo back in sync with ssu.
  */
 #define EXPECTED_SSU_CONFIG_VERSION 14
+
+/** Possible paths for OS release data */
+static const char * const os_release_paths[] = {
+    "/etc/os-release",
+    "/usr/lib/os-release",
+    NULL
+};
+
+/** Internal config data section to use for OS release data */
+#define OS_RELEASE_SECTION      "os-release"
+
+/** Possible paths for HW release data */
+static const char * const hw_release_paths[] = {
+    "/etc/hw-release",
+    "/usr/lib/hw-release",
+    NULL
+};
+
+/** Internal config data section to use for HW release data */
+#define HW_RELEASE_SECTION      "hw-release"
 
 /* ========================================================================= *
  * TYPES
@@ -89,6 +111,7 @@ void               ssusysinfo_delete                        (ssusysinfo_t *self)
 void               ssusysinfo_delete_cb                     (void *self);
 
 static void        ssusysinfo_load_board_mappings           (ssusysinfo_t *self);
+static void        ssusysinfo_load_release_file             (ssusysinfo_t *self, const char * const *paths, const char *section);
 static void        ssusysinfo_load_release_info             (ssusysinfo_t *self);
 static void        ssusysinfo_load_hw_settings              (ssusysinfo_t *self);
 static void        ssusysinfo_load_ssu_config               (ssusysinfo_t *self);
@@ -523,6 +546,31 @@ ssusysinfo_load_board_mappings(ssusysinfo_t *self)
     globfree(&gl);
 }
 
+/** Load release information from list of possible file paths
+ *
+ * @param self     ssusysinfo object pointer
+ * @param paths    array of altrernate paths to try
+ * @param section  config section in which to store loaded data
+ */
+static void
+ssusysinfo_load_release_file(ssusysinfo_t *self, const char * const *paths,
+                             const char *section)
+{
+    for( ;; ) {
+        const char *path = *paths++;
+        if( !path ) {
+            log_warning("%s data not found", section);
+            break;
+        }
+        if( access(path, F_OK) == -1 )
+            continue;
+        /* Note: The first existing alternative is used, regardless
+         *       of whether it can be successfully parsed or not. */
+        inifile_load(self->cfg_ini, path, section);
+        break;
+    }
+}
+
 /** Load release information configuration files
  *
  * @param self ssusysinfo object pointer
@@ -530,8 +578,8 @@ ssusysinfo_load_board_mappings(ssusysinfo_t *self)
 static void
 ssusysinfo_load_release_info(ssusysinfo_t *self)
 {
-    inifile_load(self->cfg_ini, "/etc/hw-release", "hw-release");
-    inifile_load(self->cfg_ini, "/etc/sailfish-release", "sailfish-release");
+    ssusysinfo_load_release_file(self, hw_release_paths, HW_RELEASE_SECTION);
+    ssusysinfo_load_release_file(self, os_release_paths, OS_RELEASE_SECTION);
 }
 
 /** Load CSD hw feature configuration files
@@ -705,7 +753,7 @@ ssusysinfo_device_model_from_hw_release(ssusysinfo_t *self)
     if( !self || !self->cfg_ini )
         goto EXIT;
 
-    res = inifile_get(self->cfg_ini, "hw-release", "MER_HA_DEVICE", 0);
+    res = inifile_get(self->cfg_ini, HW_RELEASE_SECTION, "MER_HA_DEVICE", 0);
 
 EXIT:
     return res;
@@ -1220,6 +1268,76 @@ const char *
 ssusysinfo_ssu_home_url(ssusysinfo_t *self)
 {
     return ssusysinfo_ssu_attr(self, "home-url");
+}
+
+const char *
+ssusysinfo_os_name(ssusysinfo_t *self)
+{
+    const char *res = 0;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    res = inifile_get(self->cfg_ini, OS_RELEASE_SECTION, "NAME", 0);
+
+EXIT:
+    return res ?: ssusysinfo_unknown;
+}
+
+const char *
+ssusysinfo_os_version(ssusysinfo_t *self)
+{
+    const char *res = 0;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    res = inifile_get(self->cfg_ini, OS_RELEASE_SECTION, "VERSION_ID", 0);
+
+EXIT:
+    return res ?: ssusysinfo_unknown;
+}
+
+const char *
+ssusysinfo_os_pretty_version(ssusysinfo_t *self)
+{
+    const char *res = 0;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    res = inifile_get(self->cfg_ini, OS_RELEASE_SECTION, "VERSION", 0);
+
+EXIT:
+    return res ?: ssusysinfo_unknown;
+}
+
+const char *
+ssusysinfo_hw_version(ssusysinfo_t *self)
+{
+    const char *res = 0;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    res = inifile_get(self->cfg_ini, HW_RELEASE_SECTION, "VERSION_ID", 0);
+
+EXIT:
+    return res ?: ssusysinfo_unknown;
+}
+
+const char *
+ssusysinfo_hw_pretty_version(ssusysinfo_t *self)
+{
+    const char *res = 0;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    res = inifile_get(self->cfg_ini, HW_RELEASE_SECTION, "VERSION", 0);
+
+EXIT:
+    return res ?: ssusysinfo_unknown;
 }
 
 #if SSU_INCLUDE_UNUSED_ITEMS
