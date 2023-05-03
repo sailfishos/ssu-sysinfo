@@ -77,6 +77,7 @@ static const char * const hw_feature_csd_key_lut[Feature_Count] =
     [Feature_VideoPlayback]         = "VideoPlayback",
     [Feature_Suspend]               = "Suspend",
     [Feature_Reboot]                = "Reboot",
+    [Feature_BluetoothTethering]    = "BluetoothTethering",
 };
 
 /** Key names used by ssu-sysinfo
@@ -126,6 +127,7 @@ static const char * const hw_feature_name_lut[Feature_Count] =
     [Feature_VideoPlayback]         = "Feature_VideoPlayback",
     [Feature_Suspend]               = "Feature_Suspend",
     [Feature_Reboot]                = "Feature_Reboot",
+    [Feature_BluetoothTethering]    = "Feature_BluetoothTethering",
 };
 
 /* Feature availability to use when CSD config line is missing
@@ -175,6 +177,7 @@ static const bool hw_feature_fallback_lut[Feature_Count] =
     [Feature_VideoPlayback]         = false,
     [Feature_Suspend]               = true,
     [Feature_Reboot]                = true,
+    [Feature_BluetoothTethering]    = false,
 };
 
 bool

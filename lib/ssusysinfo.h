@@ -622,6 +622,9 @@ typedef enum {
     /** Device can be rebooted */
     Feature_Reboot,
 
+    /** Device supports network tethering of bluetooth devices */
+    Feature_BluetoothTethering,
+
     /** Number of known hw features */
     Feature_Count
 } hw_feature_t;
