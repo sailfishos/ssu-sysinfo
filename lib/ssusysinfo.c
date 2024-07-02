@@ -52,7 +52,7 @@
  * a warning is emitted to journal to prompt manual check & bringing
  * ssu-sysinfo back in sync with ssu.
  */
-#define EXPECTED_SSU_CONFIG_VERSION 14
+#define EXPECTED_SSU_CONFIG_VERSION 15
 
 /** Possible paths for OS release data */
 static const char * const os_release_paths[] = {
