@@ -4,7 +4,7 @@ libdir=${prefix}/lib
 
 Name: ssu-sysinfo
 Description: Library for obtaining ssu information without IPC
-Version: 1.4.2
+Version: 1.5.0
 Requires:
 Libs: -L${libdir} -lssusysinfo
 Cflags: -I${includedir}

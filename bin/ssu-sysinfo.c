@@ -75,6 +75,7 @@ static void          output_os_pretty_version      (void);
 static void          output_os_info                (void);
 static void          output_hw_version             (void);
 static void          output_hw_pretty_version      (void);
+static void          output_board_version          (void);
 static void          output_hw_info                (void);
 
 /* ========================================================================= *
@@ -231,6 +232,7 @@ const struct option opt_long[] =
     {"os-pretty-version",       no_argument,       0, 903},
     {"hw-version",              no_argument,       0, 'B'},
     {"hw-pretty-version",       no_argument,       0, 904},
+    {"board-version",           no_argument,       0, 905},
     {0, 0, 0, 0}
 };
 
@@ -298,6 +300,7 @@ const char opt_help[] =
 "\n"
 "  -B --hw-version             Print hw version number\n"
 "  --hw-pretty-version         Print hw version description\n"
+"  --board-version             Print circuit board version description\n"
 "\n"
 ;
 
@@ -601,6 +604,14 @@ output_hw_pretty_version(void)
     printf("%s\n", ssusysinfo_hw_pretty_version(get_cfg()));
 }
 
+/** Handler for --board-version option
+ */
+static void
+output_board_version(void)
+{
+    printf("%s\n", ssusysinfo_board_version(get_cfg()));
+}
+
 /** Output all hw info fields
  */
 static void
@@ -609,6 +620,7 @@ output_hw_info(void)
     ssusysinfo_t *info = get_cfg();
     printf("hw_version: %s\n", ssusysinfo_hw_version(info));
     printf("hw_pretty_version: %s\n", ssusysinfo_hw_pretty_version(info));
+    printf("board_version: %s\n", ssusysinfo_board_version(info));
 }
 
 /* ========================================================================= *
@@ -741,6 +753,10 @@ main(int ac, char **av)
 
         case 904:
             output_hw_pretty_version();
+            break;
+
+        case 905:
+            output_board_version();
             break;
 
         case '?':

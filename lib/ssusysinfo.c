@@ -1340,6 +1340,34 @@ EXIT:
     return res ?: ssusysinfo_unknown;
 }
 
+const char *
+ssusysinfo_board_version(ssusysinfo_t *self)
+{
+    static const char path[] = "/sys/firmware/devicetree/base/model";
+    static const char sec[]  = "cached-values";
+    static const char key[]  = "BOARD_VERSION";
+
+    const char *cached = NULL;
+
+    if( !self || !self->cfg_ini )
+        goto EXIT;
+
+    if( !(cached = inifile_get(self->cfg_ini, sec, key, NULL)) ) {
+        char *probed = NULL;
+        if( fileutil_exists(path) ) {
+            if( (probed = fileutil_read(path, NULL)) )
+                strutil_trim(probed);
+        }
+        inifile_set(self->cfg_ini, sec, key,
+                    probed && *probed ? probed : ssusysinfo_unknown);
+        cached = inifile_get(self->cfg_ini, sec, key, NULL);
+        free(probed);
+    }
+
+EXIT:
+    return cached ?: ssusysinfo_unknown;
+}
+
 #if SSU_INCLUDE_UNUSED_ITEMS
 /* Accessor functions for ssu.ini items were written in mass,
  * before discovering that there are some values present in

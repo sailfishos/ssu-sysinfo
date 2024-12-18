@@ -481,6 +481,18 @@ const char *ssusysinfo_hw_version(ssusysinfo_t *self);
  */
 const char *ssusysinfo_hw_pretty_version(ssusysinfo_t *self);
 
+/** Query circuit board version description
+ *
+ * @since ssu-sysinfo 1.5.0
+ *
+ * Currently fetches version string from /sys/firmware/devicetree/base/model
+ *
+ * Expected values: "Spreadtrum UMS9230 1H10 SoC", ...
+ *
+ * @return hw version description, or "UNKNOWN" if not available
+ */
+const char *ssusysinfo_board_version(ssusysinfo_t *self);
+
 /** HW features available on the device
  *
  * The original and primary use for the hw feature configuration is
