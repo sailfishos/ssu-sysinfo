@@ -899,7 +899,7 @@ ssusysinfo_device_model(ssusysinfo_t *self)
         goto EXIT;
 
     /* Guess by looking at flag files - this needs to be done 1st
-     * so that detecting "sdk" / "sdk-target" works gegardless of
+     * so that detecting "sdk" / "sdk-target" works regardless of
      * what product configuration files are installed in the sdk. */
     if( (probed = ssusysinfo_device_model_from_flagfiles(self)) )
         goto CACHE;
