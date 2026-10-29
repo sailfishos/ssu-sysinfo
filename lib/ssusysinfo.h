@@ -637,6 +637,9 @@ typedef enum {
     /** Device supports network tethering of bluetooth devices */
     Feature_BluetoothTethering,
 
+    /** Device has an integrated keypad */
+    Feature_Keypad,
+
     /** Number of known hw features */
     Feature_Count
 } hw_feature_t;
