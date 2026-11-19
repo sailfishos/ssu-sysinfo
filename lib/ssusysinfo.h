@@ -640,6 +640,15 @@ typedef enum {
     /** Device has an integrated keypad */
     Feature_Keypad,
 
+    /** Device keypad has backlight */
+    Feature_KeypadBacklight,
+
+    /** Device can be opened with a lid */
+    Feature_Lid,
+
+    /** Device has a privacy switch */
+    Feature_PrivacySwitch,
+
     /** Number of known hw features */
     Feature_Count
 } hw_feature_t;
