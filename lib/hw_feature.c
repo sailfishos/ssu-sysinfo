@@ -79,6 +79,9 @@ static const char * const hw_feature_csd_key_lut[Feature_Count] =
     [Feature_Reboot]                = "Reboot",
     [Feature_BluetoothTethering]    = "BluetoothTethering",
     [Feature_Keypad]                = "Keypad",
+    [Feature_KeypadBacklight]       = "KeypadBacklight",
+    [Feature_Lid]                   = "Lid",
+    [Feature_PrivacySwitch]         = "PrivacySwitch",
 };
 
 /** Key names used by ssu-sysinfo
@@ -130,6 +133,9 @@ static const char * const hw_feature_name_lut[Feature_Count] =
     [Feature_Reboot]                = "Feature_Reboot",
     [Feature_BluetoothTethering]    = "Feature_BluetoothTethering",
     [Feature_Keypad]                = "Feature_Keypad",
+    [Feature_KeypadBacklight]       = "Feature_KeypadBacklight",
+    [Feature_Lid]                   = "Feature_Lid",
+    [Feature_PrivacySwitch]         = "Feature_PrivacySwitch",
 };
 
 /* Feature availability to use when CSD config line is missing
@@ -181,6 +187,9 @@ static const bool hw_feature_fallback_lut[Feature_Count] =
     [Feature_Reboot]                = true,
     [Feature_BluetoothTethering]    = false,
     [Feature_Keypad]                = false,
+    [Feature_KeypadBacklight]       = false,
+    [Feature_Lid]                   = false,
+    [Feature_PrivacySwitch]         = false,
 };
 
 bool
