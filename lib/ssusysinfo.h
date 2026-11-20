@@ -649,6 +649,9 @@ typedef enum {
     /** Device has a privacy switch */
     Feature_PrivacySwitch,
 
+    /** Device supports hearing aid compatibility */
+    Feature_HAC,
+
     /** Number of known hw features */
     Feature_Count
 } hw_feature_t;
