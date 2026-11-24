@@ -82,6 +82,7 @@ static const char * const hw_feature_csd_key_lut[Feature_Count] =
     [Feature_KeypadBacklight]       = "KeypadBacklight",
     [Feature_Lid]                   = "Lid",
     [Feature_PrivacySwitch]         = "PrivacySwitch",
+    [Feature_HAC]                   = "HAC",
 };
 
 /** Key names used by ssu-sysinfo
@@ -136,6 +137,7 @@ static const char * const hw_feature_name_lut[Feature_Count] =
     [Feature_KeypadBacklight]       = "Feature_KeypadBacklight",
     [Feature_Lid]                   = "Feature_Lid",
     [Feature_PrivacySwitch]         = "Feature_PrivacySwitch",
+    [Feature_HAC]                   = "Feature_HAC",
 };
 
 /* Feature availability to use when CSD config line is missing
@@ -190,6 +192,7 @@ static const bool hw_feature_fallback_lut[Feature_Count] =
     [Feature_KeypadBacklight]       = false,
     [Feature_Lid]                   = false,
     [Feature_PrivacySwitch]         = false,
+    [Feature_HAC]                   = false,
 };
 
 bool
